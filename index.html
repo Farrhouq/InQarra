@@ -15,6 +15,12 @@
 <body class="bg-secondary text-text">
 	<header class="bg-accent text-primary font-bold p-2 text-center sm:text-left pl-10 text-3xl flex justify-between flex-wrap gap-4">
 		<h1>InQarra</h1>
+		<div class="flex items-center" style="gap: 10px;">
+            <input id="inputS" type="number" class="w-14 p-2 text-sm h-8 border rounded-lg" max="114" min="1"/>
+            <input id="inputC" type="number" class="w-14 p-2 text-sm h-8 border rounded-lg" max="5" min="1"/>
+            <button onclick="fillParams()" class="px-3 py-2 bg-primary text-sm w-fit h-8 text-white rounded-lg">Fill</button>
+		</div>
+
 		<div class="flex gap-4 items-center text-sm">
 			<div>Mode: </div>
 			<div id="text" class=" px-3 border-2 hover:border-primary border-primary transition duration-150 cursor-pointer selected">Text</div>
@@ -84,6 +90,10 @@
 					class="bg-primary text-text px-3 hover:bg-secondary border-2 hover:border-primary border-primary transition duration-150 cursor-pointer  p-2 rounded-lg text-xl">
 					Next</div>
 			</div>
+		</div>
+
+		<div class="selections">
+
 		</div>
 	</main>
 </body>

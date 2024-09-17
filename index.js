@@ -4,6 +4,21 @@
 
 // https://api.quran.com/api/v4//quran/verses/uthmani?verse_key=1:1 (for the verse text).
 
+/**
+- added a new feature
+major challenge: failed to recognize that the value of the options of the sura select fields were in numbers (the chapter ids)
+*/
+
+const suraData = {
+  2: {
+    1: { start: 1, end: 76 },
+    2: { start: 77, end: 141 },
+    3: { start: 142, end: 202 },
+    4: { start: 203, end: 252 },
+    5: { start: 253, end: 286 },
+  },
+};
+
 const chaptersInfo = [
   {
     chapter_id: 1,
@@ -925,33 +940,31 @@ const nextBtn = document.querySelector("#next");
 const startVerse = document.querySelector("#start-verse");
 const endVerse = document.querySelector("#end-verse");
 const page = document.querySelector("#page");
-const nextPage = document.querySelector("#next-page")
-const prevPage = document.querySelector("#prev-page")
+const nextPage = document.querySelector("#next-page");
+const prevPage = document.querySelector("#prev-page");
 const pageNumber = document.querySelector("#page-number");
-const text = document.querySelector("#text")
+const text = document.querySelector("#text");
 const audioEl = document.querySelector("#audio");
-var play = document.querySelector("#play")
+var play = document.querySelector("#play");
 
 var ayahText;
-var mode = 'text';
+var mode = "text";
 let audio;
 
-audioEl.addEventListener('click', () => {
-  mode = 'audio';
-  if (!(audioEl.classList.contains('selected')))
-    text.classList.remove('selected')
-    audioEl.classList.add('selected');
-})
+audioEl.addEventListener("click", () => {
+  mode = "audio";
+  if (!audioEl.classList.contains("selected"))
+    text.classList.remove("selected");
+  audioEl.classList.add("selected");
+});
 
-
-text.addEventListener('click', () => {
-  mode = 'text';
-  if (!(text.classList.contains('selected'))) {
-    audioEl.classList.remove('selected')
-    text.classList.add('selected');
+text.addEventListener("click", () => {
+  mode = "text";
+  if (!text.classList.contains("selected")) {
+    audioEl.classList.remove("selected");
+    text.classList.add("selected");
   }
-})
-
+});
 
 for (let sura of chaptersInfo) {
   startSura.innerHTML += `<option value="${sura.chapter_id}">${sura.name_complex}</option>`;
@@ -964,9 +977,11 @@ const questionTextDiv = document.querySelector("#question-text");
 function getRandomAyah(startSura, endSura, startVerse, endVerse) {
   let minRange = endSura <= startSura ? endSura : startSura;
   let maxRange = startSura <= endSura ? endSura : startSura;
-  let randomSuraNumber = Math.floor(Math.random() * (maxRange - minRange + 1)) + minRange;
-  let suraDict = chaptersInfo.find((sura) => sura.chapter_id == randomSuraNumber);
-    console.log(randomSuraNumber)
+  let randomSuraNumber =
+    Math.floor(Math.random() * (maxRange - minRange + 1)) + minRange;
+  let suraDict = chaptersInfo.find(
+    (sura) => sura.chapter_id == randomSuraNumber,
+  );
   let randomAyahNumber = Math.ceil(Math.random() * suraDict.verses_count);
 
   //   check first if it's start or end
@@ -977,69 +992,76 @@ function getRandomAyah(startSura, endSura, startVerse, endVerse) {
   // if the same surah is selected for the beginning and end of the range, then
   //   the verse to be selected should be within startVerse and endVerse
   if (randomSuraNumber === startSura && randomSuraNumber == endSura) {
-    randomAyahNumber = Math.floor(Math.random() * (endVerse - startVerse + 1)) + startVerse;
+    randomAyahNumber =
+      Math.floor(Math.random() * (endVerse - startVerse + 1)) + startVerse;
     // console.log(0);
   }
 
   // if the selected surah is the first surah in the selected range, then
   //   the verse to be selected should be within startVerse and last verse of the surah
   else if (randomSuraNumber === startSura) {
-    const surah_last_verse = getChapterByChapterNumber(randomSuraNumber)["verses_count"];
-    randomAyahNumber = Math.floor(Math.random() * (surah_last_verse - startVerse + 1)) + startVerse;
+    const surah_last_verse =
+      getChapterByChapterNumber(randomSuraNumber)["verses_count"];
+    randomAyahNumber =
+      Math.floor(Math.random() * (surah_last_verse - startVerse + 1)) +
+      startVerse;
   }
 
   // if the selected surah is the last surah in the selected range, then
   //   the verse to be selected should be within the first verse of the surah and endVerse
   else if (randomSuraNumber === endSura) {
     const surah_first_verse = 1;
-    randomAyahNumber = Math.floor(Math.random() * (endVerse - surah_first_verse + 1)) + surah_first_verse;
+    randomAyahNumber =
+      Math.floor(Math.random() * (endVerse - surah_first_verse + 1)) +
+      surah_first_verse;
     // console.log(2);
   }
 
   // if the selected surah is any other surah within the range, then
   //   the verse to be selected should be within the first and last verses of the surah
   else {
-    randomAyahNumber = Math.floor(Math.random() * (endVerse - startVerse + 1)) + startVerse;
+    randomAyahNumber =
+      Math.floor(Math.random() * (endVerse - startVerse + 1)) + startVerse;
     // console.log(3);
   }
   // -------------------
 
   let ayahKey = `${suraDict.chapter_id}:${randomAyahNumber}`;
-  console.log(ayahKey)
 
   // get the text first
   questionTextDiv.innerHTML = `<span class="italic text-xl text-text">Loading ...</span>`;
-  fetch(`https://api.quran.com/api/v4//quran/verses/uthmani?verse_key=${ayahKey}`)
+  fetch(
+    `https://api.quran.com/api/v4//quran/verses/uthmani?verse_key=${ayahKey}`,
+  )
     .then((res) => {
       return res.json();
     })
     .then((data) => {
       ayahText = data.verses[0].text_uthmani;
-      if (mode == 'text') {
-        questionTextDiv.innerHTML = ayahText
-        questionTextDiv.innerHTML =  ayahText.slice(0, 70)+ '...؟' 
+      if (mode == "text") {
+        questionTextDiv.innerHTML = ayahText;
+        questionTextDiv.innerHTML = ayahText.slice(0, 70) + "...؟";
       }
     });
 
-    // for the image and audio
-    fetch(`https://api.quran.com/api/v4/verses/by_key/${ayahKey}?audio=11`)
+  // for the image and audio
+  fetch(`https://api.quran.com/api/v4/verses/by_key/${ayahKey}?audio=11`)
     .then((res) => {
       return res.json();
     })
     .then((data) => {
-      currentPage = data.verse.page_number
-      pageNumber.innerHTML = 'page ' + currentPage;
-      page.style.backgroundImage = `url(https://raw.githubusercontent.com/GovarJabbar/Quran-PNG/master/${String(data.verse.page_number).padStart(3, '0')}.png)`;
+      currentPage = data.verse.page_number;
+      pageNumber.innerHTML = "page " + currentPage;
+      page.style.backgroundImage = `url(https://raw.githubusercontent.com/GovarJabbar/Quran-PNG/master/${String(data.verse.page_number).padStart(3, "0")}.png)`;
     });
 
-    if (mode == 'audio') {
-      fetch(`https://api.quran.com/api/v4/recitations/2/by_ayah/${ayahKey}`)
+  if (mode == "audio") {
+    fetch(`https://api.quran.com/api/v4/recitations/2/by_ayah/${ayahKey}`)
       .then((res) => {
         return res.json();
       })
       .then((data) => {
-        questionTextDiv.innerHTML = 
-        `<audio id="audioElement" src="" autoplay controls></audio>`
+        questionTextDiv.innerHTML = `<audio id="audioElement" src="" autoplay controls></audio>`;
 
         // `<div >
         //   <svg data-slot="icon" style="width: 40px; height: 40px;cursor:pointer;" class="hover:translate-y-2 transition duration-100"  id="play" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -1052,41 +1074,68 @@ function getRandomAyah(startSura, endSura, startVerse, endVerse) {
         //   audio.play()
         // })
 
-        if (audio)
-          audio.pause();
-  
-        let audioUri = `//verses.quran.com/${data.audio_files[0].url}`;
-            console.log(data.audio_files[0].url)
-            audioUri = `https:${audioUri}`;
-            audio = new Audio(audioUri);
-            document.querySelector("#audioElement").src = audioUri;
-            
-            // play.click();
-      });
-    }
+        if (audio) audio.pause();
 
-    localStorage.setItem('startSura', parseInt(startSura))
-    localStorage.setItem('startVerse', parseInt(startVerse))
-    localStorage.setItem('endSura', parseInt(endSura))
-    localStorage.setItem('endVerse', parseInt(endVerse))
+        let audioUri = `//verses.quran.com/${data.audio_files[0].url}`;
+        audioUri = `https:${audioUri}`;
+        audio = new Audio(audioUri);
+        document.querySelector("#audioElement").src = audioUri;
+
+        // play.click();
+      });
+  }
+
+  localStorage.setItem("startSura", parseInt(startSura));
+  localStorage.setItem("startVerse", parseInt(startVerse));
+  localStorage.setItem("endSura", parseInt(endSura));
+  localStorage.setItem("endVerse", parseInt(endVerse));
 }
 
 nextBtn.addEventListener("click", () => {
-  getRandomAyah(parseInt(startSura.value), parseInt(endSura.value), parseInt(startVerse.value), parseInt(endVerse.value));
+  getRandomAyah(
+    parseInt(startSura.value),
+    parseInt(endSura.value),
+    parseInt(startVerse.value),
+    parseInt(endVerse.value),
+  );
 });
 
+function fillParams() {
+  const s = document.getElementById("inputS").value;
+  const c = document.getElementById("inputC").value;
+  const url = new URL(window.location);
+  url.searchParams.set("s", s);
+  url.searchParams.set("c", c);
+  window.location.href = url;
+}
 
-let lastStartSura = parseInt(localStorage.getItem('startSura')) || parseInt(startSura.value)
-let lastStartVerse = parseInt(localStorage.getItem('startVerse')) || parseInt(startVerse.value)
-let lastEndSura = parseInt(localStorage.getItem('endSura')) || parseInt(endSura.value)
-let lastEndVerse = parseInt(localStorage.getItem('endVerse')) || parseInt(endVerse.value)
+let lastStartSura =
+  parseInt(localStorage.getItem("startSura")) || parseInt(startSura.value);
+let lastStartVerse =
+  parseInt(localStorage.getItem("startVerse")) || parseInt(startVerse.value);
+let lastEndSura =
+  parseInt(localStorage.getItem("endSura")) || parseInt(endSura.value);
+let lastEndVerse =
+  parseInt(localStorage.getItem("endVerse")) || parseInt(endVerse.value);
 
-startSura.value = lastStartSura
-endSura.value = lastEndSura
-startVerse.value = lastStartVerse
-endVerse.value = lastEndVerse
+// new code
+const urlParams = new URLSearchParams(window.location.search);
+const s = urlParams.get("s");
+const c = urlParams.get("c");
+if (s && c) {
+  lastStartSura = s;
+  lastEndSura = s;
+  lastStartVerse = suraData[s][c].start;
+  lastEndVerse = suraData[s][c].end;
+  document.getElementById("inputS").value = s;
+  document.getElementById("inputC").value = c;
+}
+// end new code
 
-getRandomAyah(lastStartSura, lastEndSura, lastStartVerse, lastEndVerse);
+startSura.value = lastStartSura;
+endSura.value = lastEndSura;
+startVerse.value = lastStartVerse;
+endVerse.value = lastEndVerse;
 
 function getChapterByChapterNumber(chapterNumber) {
   for (let chapter of chaptersInfo) {
@@ -1118,21 +1167,23 @@ endSura.addEventListener("change", (e) => {
   endVerse.value = numberOfVerses;
 });
 
-
-nextPage.addEventListener('click', (event) => {
+nextPage.addEventListener("click", (event) => {
   event.preventDefault();
   if (currentPage < 604) {
     currentPage++;
-    page.style.backgroundImage = `url(https://raw.githubusercontent.com/GovarJabbar/Quran-PNG/master/${String(currentPage).padStart(3, '0')}.png)`;
-    pageNumber.innerHTML = 'page ' + currentPage;
+    page.style.backgroundImage = `url(https://raw.githubusercontent.com/GovarJabbar/Quran-PNG/master/${String(currentPage).padStart(3, "0")}.png)`;
+    pageNumber.innerHTML = "page " + currentPage;
   }
-})
+});
 
-prevPage.addEventListener('click', (event) => {
+prevPage.addEventListener("click", (event) => {
   event.preventDefault();
   if (currentPage) {
     currentPage--;
-    page.style.backgroundImage = `url(https://raw.githubusercontent.com/GovarJabbar/Quran-PNG/master/${String(currentPage).padStart(3, '0')}.png)`;
-    pageNumber.innerHTML = 'page ' + currentPage;
+    page.style.backgroundImage = `url(https://raw.githubusercontent.com/GovarJabbar/Quran-PNG/master/${String(currentPage).padStart(3, "0")}.png)`;
+    pageNumber.innerHTML = "page " + currentPage;
   }
-})
+});
+
+// entry point
+getRandomAyah(lastStartSura, lastEndSura, lastStartVerse, lastEndVerse);
